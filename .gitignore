@@ -1,0 +1,6 @@
+_site/
+_build/
+*.osm.pbf
+ban.json
+counties.geojson
+__pycache__/

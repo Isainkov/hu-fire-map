@@ -1,0 +1,45 @@
+name: Refresh OSM fire pits
+
+on:
+  schedule:
+    - cron: "15 3 * * 1"  # Mondays 03:15 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: osm
+  cancel-in-progress: false
+
+jobs:
+  osm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install osmium==4.3.2 shapely==2.2.0 pillow==13.0.0
+      - name: Download Hungary extract from Geofabrik
+        run: curl -sSfL --retry 3 -o hungary.osm.pbf https://download.geofabrik.de/europe/hungary-latest.osm.pbf
+      - name: County shapes from NÉBIH
+        run: python scripts/fetch_ban.py /tmp/ban.json --raw /tmp/counties.geojson
+      - name: Extract fire pits, basemap and forest mask
+        run: python scripts/extract.py hungary.osm.pbf /tmp/counties.geojson data/osm
+      - name: Car access and private yards
+        run: python scripts/roads.py hungary.osm.pbf data/osm/data.json
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/osm
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "Refresh OSM data $(date -u +%F)"
+          git push
+          # pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy explicitly
+          gh workflow run deploy.yml
+        env:
+          GH_TOKEN: ${{ github.token }}

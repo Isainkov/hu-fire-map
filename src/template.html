@@ -1,0 +1,541 @@
+<title>Hungary Fire Pit Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/*LEAFLET_CSS*/
+</style>
+<style>
+/* Layout: one-screen tool — vector map fills the screen, a side sheet lists the nearest legal firepits; on phones the sheet stacks under the map. */
+:root {
+  --ground: #e9ece6;
+  --panel: #f7f8f5;
+  --ink: #1d2320;
+  --muted: #5e6a63;
+  --line: #cfd6cf;
+  --forest: #a9c9a0;
+  --water: #8db7d6;
+  --road: #b7bdb6;
+  --ban: #c63c32;
+  --ember: #d9531c;
+  --ember-ink: #ffffff;
+  --off: #8f9893;
+  --venue: #23302a;
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "Onest", "Segoe UI", system-ui, sans-serif;
+  --f-data: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #141917; --panel: #1b211e; --ink: #e6ebe7; --muted: #9aa69f; --line: #2f3833;
+    --forest: #27432f; --water: #24465f; --road: #4a534e; --ban: #e3584d; --ember: #ff7b3a; --ember-ink: #1a0f08; --off: #66706a;
+    --venue: #f1efe8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #141917; --panel: #1b211e; --ink: #e6ebe7; --muted: #9aa69f; --line: #2f3833;
+  --forest: #27432f; --water: #24465f; --road: #4a534e; --ban: #e3584d; --ember: #ff7b3a; --ember-ink: #1a0f08; --off: #66706a;
+  --venue: #f1efe8;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { margin: 0; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); box-sizing: border-box; }
+body { background: var(--ground); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.45; }
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 370px; height: 100%; }
+#map { background: var(--ground); min-height: 0; }
+aside {
+  background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; min-width: 0;
+  padding-block: 18px 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 18px;
+}
+.head { display: grid; gap: 10px; }
+.langs { display: flex; gap: 4px; justify-self: start; }
+.langs button { font: 600 11px/1 var(--f-body); letter-spacing: 0.08em; padding: 6px 9px; border-radius: 6px; border: 1px solid var(--line); background: none; color: var(--muted); cursor: pointer; }
+.langs button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.langs button:focus-visible { outline: 2px solid var(--ember); outline-offset: 1px; }
+h1 { font-family: var(--f-display); font-weight: 600; font-size: 19px; line-height: 1.2; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+.status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; color: var(--muted); font-size: 13px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); font-size: 12px; color: var(--ink); }
+#updated.warn { color: var(--ban); font-weight: 600; }
+.chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--ban); }
+.legend { display: grid; gap: 7px; font-size: 13px; }
+.legend div { display: flex; align-items: center; gap: 10px; }
+.sw { width: 18px; height: 12px; flex: none; border-radius: 2px; }
+.sw.ban { background: color-mix(in srgb, var(--ban) 22%, transparent); border: 1.5px solid var(--ban); }
+.sw.forest { background: var(--forest); }
+.sw.pit { width: 12px; height: 12px; border-radius: 50%; background: var(--ember); box-shadow: 0 0 0 2px var(--panel), 0 0 0 3px var(--ember); margin-inline: 3px; }
+.sw.off { width: 8px; height: 8px; border-radius: 50%; background: var(--off); margin-inline: 5px; }
+.venue-ico { width: 22px; height: 22px; border-radius: 6px; background: var(--venue); display: grid; place-items: center; box-shadow: 0 0 0 2px var(--panel); flex: none; }
+.venue-ico svg { width: 14px; height: 14px; fill: var(--ember); }
+.legend .venue-ico { width: 18px; height: 18px; }
+.legend .venue-ico svg { width: 11px; height: 11px; }
+.seg { border: 0; margin: 0; padding: 0; min-width: 0; }
+.seg legend { font-size: 13px; font-weight: 500; padding: 0; margin-bottom: 8px; }
+.seg-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg-row input { position: absolute; opacity: 0; pointer-events: none; }
+.seg-row label { text-align: center; padding: 7px 4px; font-size: 13px; cursor: pointer; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.seg-row label + input + label { border-left: 1px solid var(--line); }
+.seg-row input:checked + label { background: var(--ember); color: var(--ember-ink); font-weight: 600; }
+.seg-row input:focus-visible + label { box-shadow: inset 0 0 0 2px var(--ink); }
+.toggles { display: grid; gap: 6px; font-size: 13px; }
+.toggles label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.toggles input { accent-color: var(--ember); width: 16px; height: 16px; margin: 0; flex: none; }
+h2 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 8px; }
+ol.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+ol.list button {
+  width: 100%; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; align-items: baseline; text-align: left;
+  background: none; border: 0; border-radius: 6px; padding: 7px 8px; color: inherit; font: inherit; cursor: pointer;
+}
+ol.list.venues button { grid-template-columns: 22px minmax(0, 1fr); align-items: center; }
+ol.list button:hover, ol.list button:focus-visible { background: color-mix(in srgb, var(--ember) 12%, transparent); outline: none; }
+ol.list button:focus-visible { box-shadow: inset 0 0 0 2px var(--ember); }
+.km { font-family: var(--f-data); font-size: 12px; color: var(--ember); font-variant-numeric: tabular-nums; text-align: right; }
+.nm { font-weight: 500; overflow-wrap: anywhere; }
+.sub { display: block; color: var(--muted); font-size: 12px; }
+.rules { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 8px; }
+.rules p { margin: 0; }
+.rules a, .pop a { color: var(--ember); }
+.empty { color: var(--muted); font-size: 13px; }
+/* map furniture */
+.leaflet-container { font-family: var(--f-body); background: var(--ground); }
+.leaflet-control-zoom a { background: var(--panel); color: var(--ink); border-color: var(--line) !important; }
+.leaflet-control-attribution { background: color-mix(in srgb, var(--panel) 85%, transparent) !important; color: var(--muted); }
+.leaflet-control-attribution a { color: var(--muted); }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); color: var(--ink); box-shadow: 0 4px 18px rgb(0 0 0 / 0.25); }
+.leaflet-container a.leaflet-popup-close-button { color: var(--muted); }
+.town { font-size: 11px; font-weight: 500; color: var(--ink); white-space: nowrap; text-shadow: 0 0 3px var(--ground), 0 0 3px var(--ground), 0 0 2px var(--ground); pointer-events: none; transform: translate(-50%, -50%); width: max-content; }
+.town.city { font-size: 13px; font-weight: 600; }
+.town.bp { font-family: var(--f-display); font-size: 14px; }
+.vmark { transform: translate(-50%, -50%); }
+.pop { display: grid; gap: 6px; min-width: 210px; font-size: 13px; }
+.pop b { font-size: 14px; }
+.pop .meta { color: var(--muted); }
+.pop .ok { color: var(--ember); font-weight: 600; }
+.pop .no { color: var(--ban); font-weight: 600; }
+.pop .links { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.pop .coords { font-family: var(--f-data); font-size: 11px; color: var(--muted); }
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 58vh auto; height: auto; }
+  html, body { height: auto; }
+  aside { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+}
+@media (prefers-reduced-motion: reduce) { .leaflet-zoom-anim .leaflet-zoom-animated { transition: none !important; } }
+</style>
+
+<div class="app">
+  <div id="map" role="application"></div>
+  <aside>
+    <div class="head">
+      <div class="langs" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="hu">HU</button>
+        <button type="button" data-lang="uk">UK</button>
+      </div>
+      <h1 data-t="title"></h1>
+      <div class="status"><span class="chip"><i></i><span id="ban-date"></span></span><span id="count"></span><span id="updated"></span></div>
+    </div>
+    <div class="legend">
+      <div><span class="sw ban"></span><span data-t="lgBan"></span></div>
+      <div><span class="sw pit"></span><span data-t="lgPit"></span></div>
+      <div><span class="venue-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#flame"/></svg></span><span data-t="lgVenue"></span></div>
+      <div><span class="sw off"></span><span data-t="lgOff"></span></div>
+      <div><span class="sw forest"></span><span data-t="lgForest"></span></div>
+    </div>
+    <fieldset class="seg">
+      <legend data-t="carLegend"></legend>
+      <div class="seg-row">
+        <input type="radio" name="car" id="car-any" value="0" checked><label for="car-any" data-t="any"></label>
+        <input type="radio" name="car" id="car-300" value="300"><label for="car-300">≤ 300 m</label>
+        <input type="radio" name="car" id="car-100" value="100"><label for="car-100">≤ 100 m</label>
+        <input type="radio" name="car" id="car-30" value="30"><label for="car-30">≤ 30 m</label>
+      </div>
+    </fieldset>
+    <div class="toggles">
+      <label><input type="checkbox" id="t-venues" checked> <span data-t="tVenues"></span></label>
+      <label><input type="checkbox" id="t-bbq" checked> <span data-t="tBbq"></span></label>
+      <label><input type="checkbox" id="t-banned" checked> <span data-t="tBanned"></span></label>
+    </div>
+    <section>
+      <h2 data-t="hVenues"></h2>
+      <ol class="list venues" id="venue-list"></ol>
+    </section>
+    <section>
+      <h2 data-t="hNearest"></h2>
+      <ol class="list" id="list"></ol>
+    </section>
+    <div class="rules">
+      <p data-t="r1" data-html></p>
+      <p data-t="r2"></p>
+      <p data-t="r3"></p>
+      <p data-t="r4"></p>
+    </div>
+  </aside>
+</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="flame" viewBox="0 0 24 24"><path d="M12 2c1 3.2-.6 5-2 6.6C8.6 10.2 7 12 7 14.6A5 5 0 0 0 12 20a5 5 0 0 0 5-5.2c0-2-1-3.4-2-4.6.1 1.6-.5 2.7-1.6 3.2.4-3.6-.4-7.2-1.4-11.4ZM6 21h12v1.6H6z"/></symbol>
+</svg>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const I18N = {
+  en: {
+    locale: "en-GB",
+    title: "Where you can light a fire today",
+    banOn: d => `fire ban map, ${d}`,
+    updated: t => `checked ${t}`,
+    stale: "NÉBIH is not responding, showing the last known ban",
+    count: (n, lim) => `${n} spots outside the ban` + (lim ? `, within ${lim} m of a road` : ""),
+    lgBan: "County under fire ban: no fire anywhere outdoors, not even at fire pits",
+    lgPit: "Fire pit or barbecue outside the ban",
+    lgVenue: "Grill to rent in Budapest",
+    lgOff: "Fire pit inside the ban zone (not today)",
+    lgForest: "Forest: fire only at a built fire pit",
+    carLegend: "Car access: from the road to the spot",
+    any: "Any",
+    tVenues: "Grill rentals in Budapest",
+    tBbq: "Barbecues (amenity=bbq), not only fire pits",
+    tBanned: "Show spots inside the ban zone",
+    hVenues: "Rent a grill in Budapest",
+    hNearest: "Nearest to Budapest, fire allowed",
+    r1: 'The ban is set per county and changes almost daily. Check <a href="https://erdotuz.hu" target="_blank" rel="noopener">erdotuz.hu</a> before you go.',
+    r2: "With no ban, fire in a forest or within 200 m of one is still allowed only at a built fire pit. Clear leaves and twigs around it and stay until the embers are cold.",
+    r3: "Spots come from OpenStreetMap. Fire pits in private yards are hidden, but nobody checked the rest: a pit may be gone, a barbecue may belong to a restaurant.",
+    r4: "Car access is measured in a straight line to the nearest road open to cars. Forest tracks don't count: in Hungary they are closed to cars unless a sign says otherwise. The map can't see barriers.",
+    empty: "Nothing here. Allow a longer walk from the road or turn on barbecues.",
+    firepit: "Fire pit", bbq: "Barbecue",
+    near: x => `near ${x}`,
+    countyUnknown: "county unknown",
+    fromBp: km => `${km} km from central Budapest (straight line)`,
+    banToday: "Fire ban here today", noBanToday: "No fire ban here today",
+    carRight: "You can park right at the spot",
+    carRoad: d => `${d} walk from the nearest road open to cars (straight line)`,
+    parking: d => `Nearest parking: ${d}`,
+    roadUnknown: "Distance to road unknown",
+    roadShort: d => `road ${d}`, roadNear: "road next to it",
+    guests: "for guests of the place",
+    covered: "covered", fee: "paid",
+    fuel: { wood: "wood", charcoal: "charcoal", gas: "gas", electric: "electric" },
+    route: "Directions", website: "Website",
+    venueBan: "In town: the forest fire ban covers forests and 200 m around them outside built-up areas, so the venue sets its own rules. Call ahead.",
+    priceAsOf: y => `price as of ${y}`,
+    approx: "approximate location",
+    mapLabel: "Map of fire pits",
+    m: v => v < 1000 ? `${v} m` : `${(v / 1000).toFixed(1)} km`,
+  },
+  hu: {
+    locale: "hu-HU",
+    title: "Hol rakhatsz ma tüzet",
+    banOn: d => `tűzgyújtási tilalom, ${d}`,
+    updated: t => `frissítve ${t}`,
+    stale: "A NÉBIH nem válaszol, az utolsó ismert tilalom látszik",
+    count: (n, lim) => `${n} hely a tilalmon kívül` + (lim ? `, ${lim} m-en belül úttól` : ""),
+    lgBan: "Tilalom alatt álló vármegye: szabadban sehol, a tűzrakóhelyeken sem szabad tüzet gyújtani",
+    lgPit: "Tűzrakóhely vagy grill a tilalmon kívül",
+    lgVenue: "Bérelhető grill Budapesten",
+    lgOff: "Tűzrakóhely a tilalmi zónában (ma nem)",
+    lgForest: "Erdő: tűz csak kiépített tűzrakóhelyen",
+    carLegend: "Autóval: az úttól a helyig",
+    any: "Bármi",
+    tVenues: "Bérelhető grillek Budapesten",
+    tBbq: "Grillezők (amenity=bbq), nem csak tűzrakóhelyek",
+    tBanned: "Tilalmi zónában lévő helyek mutatása",
+    hVenues: "Grillbérlés Budapesten",
+    hNearest: "Legközelebb Budapesthez, ahol szabad",
+    r1: 'A tilalom vármegyénként szól és szinte naponta változik. Indulás előtt nézd meg az <a href="https://erdotuz.hu" target="_blank" rel="noopener">erdotuz.hu</a> oldalt.',
+    r2: "Tilalom nélkül is: erdőben és attól 200 m-en belül csak kiépített tűzrakóhelyen szabad tüzet rakni. Takarítsd el körülötte a leveleket, gallyakat, és maradj, amíg a parázs ki nem hűl.",
+    r3: "A helyek az OpenStreetMapből származnak. A magánkertekben lévő tűzrakóhelyeket elrejtettük, a többit senki sem ellenőrizte: lehet, hogy már nincs ott, vagy egy étteremé.",
+    r4: "Az autós megközelítés légvonalban számolva a legközelebbi, autóval járható útig. Az erdei utak nem számítanak: Magyarországon gépjárművel tilosak, hacsak tábla nem engedi. Sorompót a térkép nem lát.",
+    empty: "Nincs találat. Engedj hosszabb sétát az úttól, vagy kapcsold be a grillezőket.",
+    firepit: "Tűzrakóhely", bbq: "Grillező",
+    near: x => `${x} mellett`,
+    countyUnknown: "vármegye ismeretlen",
+    fromBp: km => `${km} km Budapest központjától (légvonalban)`,
+    banToday: "Ma itt tűzgyújtási tilalom van", noBanToday: "Ma itt nincs tilalom",
+    carRight: "Az autóval közvetlenül mellé lehet állni",
+    carRoad: d => `${d} séta a legközelebbi, autóval járható úttól (légvonalban)`,
+    parking: d => `Legközelebbi parkoló: ${d}`,
+    roadUnknown: "Az út távolsága ismeretlen",
+    roadShort: d => `út ${d}`, roadNear: "út közvetlenül mellette",
+    guests: "a hely vendégeinek",
+    covered: "fedett", fee: "fizetős",
+    fuel: { wood: "fa", charcoal: "faszén", gas: "gáz", electric: "elektromos" },
+    route: "Útvonal", website: "Weboldal",
+    venueBan: "Belterület: az erdőtűz-tilalom az erdőkre és a külterületi 200 m-es sávjukra vonatkozik, itt a hely saját szabályai érvényesek. Előtte telefonálj.",
+    priceAsOf: y => `${y}-es ár`,
+    approx: "hozzávetőleges hely",
+    mapLabel: "Tűzrakóhelyek térképe",
+    m: v => v < 1000 ? `${v} m` : `${(v / 1000).toFixed(1).replace(".", ",")} km`,
+  },
+  uk: {
+    locale: "uk-UA",
+    title: "Де сьогодні можна розпалити багаття",
+    banOn: d => `заборона на вогонь, ${d}`,
+    updated: t => `перевірено о ${t}`,
+    stale: "NÉBIH не відповідає, показано останню відому заборону",
+    count: (n, lim) => `${n} місць поза забороною` + (lim ? `, до ${lim} м від дороги` : ""),
+    lgBan: "Медьє під забороною: вогонь просто неба заборонено скрізь, навіть на кострищах",
+    lgPit: "Кострище або мангал поза забороною",
+    lgVenue: "Гриль в оренду в Будапешті",
+    lgOff: "Кострище в зоні заборони (сьогодні не можна)",
+    lgForest: "Ліс: вогонь лише на облаштованому кострищі",
+    carLegend: "Під'їзд на машині: від дороги до місця",
+    any: "Будь-який",
+    tVenues: "Оренда гриля в Будапешті",
+    tBbq: "Мангали (amenity=bbq), не лише кострища",
+    tBanned: "Показувати точки в зоні заборони",
+    hVenues: "Гриль в оренду в Будапешті",
+    hNearest: "Найближчі до Будапешта, де можна",
+    r1: 'Заборону вводять по медьє, і вона змінюється майже щодня. Перед виїздом перевір <a href="https://erdotuz.hu" target="_blank" rel="noopener">erdotuz.hu</a>.',
+    r2: "Навіть без заборони в лісі й ближче ніж 200 м від нього вогонь можна розпалювати лише на облаштованому кострищі. Розчисти довкола листя й гілки і не йди, поки жар не охолоне.",
+    r3: "Точки взято з OpenStreetMap. Кострища в приватних дворах приховано, решту ніхто не перевіряв: кострища може вже не бути, а мангал може належати ресторану.",
+    r4: "Під'їзд рахується по прямій до найближчої дороги, відкритої для машин. Лісові ґрунтівки не враховуються: в Угорщині вони закриті для машин, якщо знак не дозволяє. Шлагбаумів карта не бачить.",
+    empty: "Нічого не знайшлося. Дозволь довшу прогулянку від дороги або увімкни мангали.",
+    firepit: "Кострище", bbq: "Мангал",
+    near: x => `біля ${x}`,
+    countyUnknown: "медьє невідоме",
+    fromBp: km => `${km} км від центру Будапешта (по прямій)`,
+    banToday: "Сьогодні тут заборона на вогонь", noBanToday: "Сьогодні тут заборони немає",
+    carRight: "Машину можна поставити прямо біля місця",
+    carRoad: d => `${d} пішки від найближчої дороги для машин (по прямій)`,
+    parking: d => `Найближча парковка: ${d}`,
+    roadUnknown: "Відстань до дороги невідома",
+    roadShort: d => `дорога ${d}`, roadNear: "дорога поруч",
+    guests: "для гостей закладу",
+    covered: "під навісом", fee: "платно",
+    fuel: { wood: "дрова", charcoal: "вугілля", gas: "газ", electric: "електричний" },
+    route: "Маршрут", website: "Сайт",
+    venueBan: "У межах міста: лісова заборона діє в лісах і в 200-метровій смузі навколо них поза населеними пунктами, тут діють правила закладу. Зателефонуй заздалегідь.",
+    priceAsOf: y => `ціна станом на ${y}`,
+    approx: "приблизне розташування",
+    mapLabel: "Карта кострищ",
+    m: v => v < 1000 ? `${v} м` : `${(v / 1000).toFixed(1).replace(".", ",")} км`,
+  },
+};
+
+(async () => {
+  const BP = [47.4979, 19.0402];
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+  const pickLang = () => {
+    const saved = store.get("fire-lang");
+    if (saved && I18N[saved]) return saved;
+    for (const l of navigator.languages || [navigator.language || ""]) {
+      const c = l.slice(0, 2).toLowerCase();
+      if (I18N[c]) return c;
+    }
+    return "en";
+  };
+  let lang = pickLang();
+  let T = I18N[lang];
+
+  const nocache = { cache: "no-store" };
+  const [data, venues, ban] = await Promise.all([fetch("data.json").then(r => r.json()), fetch("venues.json").then(r => r.json()),
+    fetch("ban.json", nocache).then(r => r.json())]);
+  // ban.json is refreshed every 30 minutes; a point is banned when its county is flagged today
+  data.points.forEach(p => { p.banned = ban.counties[p.county] === true; });
+  const banDate = new Date((ban.date || ban.fetched.slice(0, 10)) + "T12:00:00");
+  const fetched = new Date(ban.fetched);
+
+  const map = L.map("map", { zoomControl: true, preferCanvas: true, minZoom: 7, maxZoom: 17, maxBounds: L.latLngBounds(data.bounds).pad(0.1) })
+    .setView(BP, 9);
+  map.attributionControl.setPrefix(false).addAttribution('© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · <a href="https://erdotuz.hu" target="_blank" rel="noopener">NÉBIH</a>');
+
+  map.createPane("forest").style.zIndex = 210;
+  map.createPane("base").style.zIndex = 220;
+  map.createPane("ban").style.zIndex = 230;
+  map.createPane("labels").style.zIndex = 450;
+  map.createPane("venues").style.zIndex = 640;
+
+  // forest mask is a transparent PNG; tint it with the current theme colour on a canvas
+  const forestImg = new Image();
+  forestImg.src = "forest.png";
+  await forestImg.decode().catch(() => {});
+  let forestLayer;
+  function paintForest() {
+    if (!forestImg.naturalWidth) return;
+    const c = document.createElement("canvas");
+    c.width = forestImg.naturalWidth; c.height = forestImg.naturalHeight;
+    const g = c.getContext("2d");
+    g.drawImage(forestImg, 0, 0);
+    g.globalCompositeOperation = "source-in";
+    g.fillStyle = css("--forest");
+    g.fillRect(0, 0, c.width, c.height);
+    const url = c.toDataURL();
+    if (forestLayer) forestLayer.setUrl(url);
+    else forestLayer = L.imageOverlay(url, data.bounds, { pane: "forest", interactive: false }).addTo(map);
+  }
+
+  const styled = [];
+  function vec(geo, styleFn, pane) {
+    const layer = L.geoJSON(geo, { pane, interactive: false, style: styleFn }).addTo(map);
+    styled.push([layer, styleFn]);
+  }
+  vec(data.lakes, () => ({ stroke: false, fillColor: css("--water"), fillOpacity: 1 }), "base");
+  vec(data.rivers, () => ({ color: css("--water"), weight: 2.2, opacity: 1 }), "base");
+  vec(data.roads, () => ({ color: css("--road"), weight: 1.4, opacity: 1 }), "base");
+  vec(data.county_lines, () => ({ color: css("--muted"), weight: 1, opacity: 0.55, dashArray: "4 4" }), "base");
+  if (ban.ban) vec(ban.ban, () => ({ color: css("--ban"), weight: 2, opacity: 0.9, fillColor: css("--ban"), fillOpacity: 0.16 }), "ban");
+
+  // town labels: cities always, towns from zoom 9-10, villages from 12
+  const labels = data.towns.map(t => {
+    const bp = t.n === "Budapest";
+    const m = L.marker([t.lat, t.lon], { pane: "labels", interactive: false, keyboard: false,
+      icon: L.divIcon({ className: "", html: `<div class="town${t.c ? " city" : ""}${bp ? " bp" : ""}">${esc(t.n)}</div>`, iconSize: null }) });
+    m._min = bp ? 0 : t.c ? 8 : t.v ? 12 : (t.p > 15000 ? 9 : 10);
+    return m;
+  });
+  const syncLabels = () => { const z = map.getZoom(); labels.forEach(m => z >= m._min ? m.addTo(map) : m.remove()); };
+  map.on("zoomend", syncLabels);
+
+  const kindLabel = p => p.k === "firepit" ? T.firepit : T.bbq;
+  const gmaps = (lat, lon) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+
+  function carText(p) {
+    if (p.road == null) return T.roadUnknown;
+    const road = p.road <= 15 ? T.carRight : T.carRoad(T.m(p.road));
+    return p.park != null && p.park < 1500 ? `${road}<br><span class="meta">${T.parking(T.m(p.park))}</span>` : road;
+  }
+
+  function pitPopup(p) {
+    const t = p.tags;
+    const facts = [kindLabel(p), t.fuel && (T.fuel[t.fuel] || t.fuel), t.covered === "yes" && T.covered,
+      p.guests && T.guests, t.fee === "yes" && T.fee].filter(Boolean).join(" · ");
+    return `<div class="pop">
+      <b>${esc(t.name || kindLabel(p))}</b>
+      <span class="meta">${esc(facts)}<br>${esc(T.near(p.near))}, ${esc(p.county || T.countyUnknown)}<br>${esc(T.fromBp(p.km))}</span>
+      ${p.banned ? `<span class="no">${T.banToday}</span>` : `<span class="ok">${T.noBanToday}</span>`}
+      <span>${carText(p)}</span>
+      ${t.description ? `<span class="meta">${esc(t.description)}</span>` : ""}
+      <span class="links">
+        <a href="${gmaps(p.lat, p.lon)}" target="_blank" rel="noopener">${T.route}</a>
+        <a href="https://mapy.com/fnc/v1/showmap?mapset=outdoor&center=${p.lon},${p.lat}&zoom=16&marker=true" target="_blank" rel="noopener">Mapy.com</a>
+        <a href="https://www.openstreetmap.org/${p.id}" target="_blank" rel="noopener">OSM</a>
+      </span>
+      <span class="coords">${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</span>
+    </div>`;
+  }
+
+  function venuePopup(v) {
+    return `<div class="pop">
+      <b>${esc(v.name)}</b>
+      <span class="meta">${esc(v.addr)}${v.approx ? ` (${T.approx})` : ""}</span>
+      <span>${esc(v.offer[lang])}</span>
+      <span class="ok">${esc(v.price[lang])} <span class="meta" style="font-weight:400">· ${esc(T.priceAsOf(v.year))}</span></span>
+      <span class="meta">${T.venueBan}</span>
+      <span class="links">
+        <a href="${esc(v.url)}" target="_blank" rel="noopener">${T.website}</a>
+        <a href="${gmaps(v.lat, v.lon)}" target="_blank" rel="noopener">${T.route}</a>
+      </span>
+    </div>`;
+  }
+
+  const flameIcon = '<span class="venue-ico vmark"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#flame"/></svg></span>';
+  const venueMarkers = venues.map(v => {
+    const mk = L.marker([v.lat, v.lon], { pane: "venues", icon: L.divIcon({ className: "", html: flameIcon, iconSize: null }), title: v.name });
+    mk.bindPopup(() => venuePopup(v), { maxWidth: 290 });
+    mk._v = v;
+    return mk;
+  });
+  const venueLayer = L.layerGroup(venueMarkers);
+
+  // private yards are dropped entirely
+  const pts = data.points.filter(p => !p.private).map(p => {
+    const mk = L.circleMarker([p.lat, p.lon], { radius: 4, weight: 1.5 });
+    mk.bindPopup(() => pitPopup(p), { maxWidth: 290 });
+    mk._p = p;
+    return mk;
+  });
+  const ptLayer = L.layerGroup().addTo(map);
+
+  const tVen = document.getElementById("t-venues"), tBbq = document.getElementById("t-bbq"), tBan = document.getElementById("t-banned");
+  for (const [el, k] of [[tVen, "venues"], [tBbq, "bbq"], [tBan, "ban"]]) {
+    const v = store.get("fire-" + k);
+    if (v !== null) el.checked = v === "1";
+    el.addEventListener("change", () => { store.set("fire-" + k, el.checked ? "1" : "0"); render(); });
+  }
+  const carRadios = [...document.querySelectorAll('input[name="car"]')];
+  const savedCar = store.get("fire-car");
+  carRadios.forEach(r => {
+    if (savedCar !== null) r.checked = r.value === savedCar;
+    r.addEventListener("change", () => { store.set("fire-car", r.value); render(); });
+  });
+  const carLimit = () => +(carRadios.find(r => r.checked)?.value || 0);
+
+  function styleMarkers() {
+    const ember = css("--ember"), off = css("--off"), panel = css("--panel");
+    pts.forEach(mk => mk.setStyle(mk._p.banned
+      ? { radius: 3, color: off, fillColor: off, fillOpacity: 0.8, weight: 0 }
+      : { radius: 6, color: panel, weight: 2, fillColor: ember, fillOpacity: 1 }));
+  }
+
+  function focus(mk, ll) {
+    map.flyTo(ll, Math.max(map.getZoom(), 14), { duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 0.8 });
+    map.once("moveend", () => mk.openPopup());
+    if (matchMedia("(max-width: 760px)").matches) document.getElementById("map").scrollIntoView({ behavior: "smooth" });
+  }
+
+  function render() {
+    map.closePopup();
+    tVen.checked ? venueLayer.addTo(map) : venueLayer.remove();
+    const vlist = document.getElementById("venue-list");
+    vlist.closest("section").hidden = !tVen.checked;
+    vlist.innerHTML = "";
+    venueMarkers.forEach(mk => {
+      const v = mk._v, li = document.createElement("li"), b = document.createElement("button");
+      b.type = "button";
+      b.innerHTML = `<span class="venue-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#flame"/></svg></span><span><span class="nm">${esc(v.name)}</span><span class="sub">${esc(v.price[lang])}</span></span>`;
+      b.addEventListener("click", () => focus(mk, [v.lat, v.lon]));
+      li.append(b); vlist.append(li);
+    });
+
+    ptLayer.clearLayers();
+    const lim = carLimit();
+    const shown = pts.filter(mk => (tBbq.checked || mk._p.k === "firepit") && (!lim || (mk._p.road != null && mk._p.road <= lim)));
+    if (tBan.checked) shown.filter(mk => mk._p.banned).forEach(mk => ptLayer.addLayer(mk));
+    const free = shown.filter(mk => !mk._p.banned);
+    free.forEach(mk => ptLayer.addLayer(mk));
+    document.getElementById("count").textContent = T.count(free.length, lim);
+    const list = document.getElementById("list");
+    list.innerHTML = free.length ? "" : `<li class="empty">${T.empty}</li>`;
+    free.slice(0, 40).forEach(mk => {
+      const p = mk._p, li = document.createElement("li"), b = document.createElement("button");
+      b.type = "button";
+      const road = p.road == null ? "" : " · " + (p.road <= 15 ? T.roadNear : T.roadShort(T.m(p.road)));
+      b.innerHTML = `<span class="km">${Math.round(p.km)} km</span><span><span class="nm">${esc(p.tags.name || kindLabel(p) + " · " + T.near(p.near))}</span><span class="sub">${p.tags.name ? esc(T.near(p.near)) + " · " : ""}${esc(p.county || "")}${esc(road)}</span></span>`;
+      b.addEventListener("click", () => focus(mk, [p.lat, p.lon]));
+      li.append(b); list.append(li);
+    });
+  }
+
+  function applyLang(l) {
+    lang = l; T = I18N[l];
+    document.documentElement.lang = l;
+    document.querySelectorAll("[data-t]").forEach(el => {
+      const v = T[el.dataset.t];
+      if (el.hasAttribute("data-html")) el.innerHTML = v; else el.textContent = v;
+    });
+    document.querySelectorAll(".langs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === l)));
+    document.getElementById("map").setAttribute("aria-label", T.mapLabel);
+    document.getElementById("ban-date").textContent = T.banOn(banDate.toLocaleDateString(T.locale, { day: "numeric", month: "long", year: "numeric" }));
+    const old = ban.stale || Date.now() - fetched > 3 * 3600e3;
+    document.getElementById("updated").textContent = old ? T.stale : T.updated(fetched.toLocaleTimeString(T.locale, { hour: "2-digit", minute: "2-digit" }));
+    document.getElementById("updated").classList.toggle("warn", old);
+    render();
+  }
+  document.querySelectorAll(".langs button").forEach(b => b.addEventListener("click", () => { store.set("fire-lang", b.dataset.lang); applyLang(b.dataset.lang); }));
+
+  function restyle() {
+    styled.forEach(([layer, fn]) => layer.setStyle(fn));
+    styleMarkers();
+    paintForest();
+  }
+  restyle(); syncLabels(); applyLang(lang);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", restyle);
+  new MutationObserver(restyle).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>

@@ -1,0 +1,41 @@
+name: Deploy (fresh fire ban)
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"  # every 30 minutes, off the top of the hour when GitHub's queue is busiest
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install shapely==2.2.0
+      - id: pages
+        uses: actions/configure-pages@v5
+      - name: Fetch today's ban from NÉBIH
+        run: python scripts/fetch_ban.py ban.json --fallback "${{ steps.pages.outputs.base_url }}/ban.json"
+      - run: python scripts/build.py ban.json _site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

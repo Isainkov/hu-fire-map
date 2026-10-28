@@ -1,0 +1,90 @@
+[
+  {
+    "id": "budapest-garden", "name": "Budapest Garden", "lat": 47.53091, "lon": 19.04262,
+    "addr": "1036 Budapest, Árpád fejedelem útja 125", "year": 2023,
+    "url": "https://budapestgarden.com/szabadido/grill",
+    "offer": {
+      "en": "Grill and cauldron gear provided, you bring the food. Book online about a week ahead.",
+      "hu": "A grill- és bográcseszközöket ők adják, az ételt te hozod. Online foglalás, kb. egy héttel előre.",
+      "uk": "Гриль і казанок дають на місці, їжу береш свою. Бронювання онлайн, приблизно за тиждень."
+    },
+    "price": { "en": "7,500 Ft for up to 10 people, all day", "hu": "7 500 Ft legfeljebb 10 főre, egész napra", "uk": "7 500 Ft до 10 осіб, на весь день" }
+  },
+  {
+    "id": "ket-rombusz", "name": "Két Rombusz", "lat": 47.57429, "lon": 19.06537,
+    "addr": "1031 Budapest, Római part 45", "year": 2023,
+    "url": "https://welovebudapest.com/toplista/2023/07/12/gasztro-szabadido-grillezes-sutogetos-helyek-budapest/",
+    "offer": {
+      "en": "10 cauldron spots and 6 grill carts in the courtyard. No rental fee, but drinks must be bought at the bar. Book by phone.",
+      "hu": "Az udvarban 10 bográcsozóhely és 6 grillkocsi. Bérleti díj nincs, az italt helyben kell venni. Foglalás telefonon.",
+      "uk": "У дворі 10 місць для казанка і 6 грилів на візках. Оренда безкоштовна, але напої купувати в барі. Бронювання телефоном."
+    },
+    "price": { "en": "Firewood 2,000 Ft per spot", "hu": "Tűzifa 2 000 Ft / hely", "uk": "Дрова 2 000 Ft за місце" }
+  },
+  {
+    "id": "golyos", "name": "Golyós", "lat": 47.57453, "lon": 19.06552,
+    "addr": "1031 Budapest, Római part 45–47", "year": 2016,
+    "url": "https://welovebudapest.com/en/toplist/10-places-for-barbecue-parties-in-budapest",
+    "offer": {
+      "en": "Barbecue and cauldron cooking on site, petanque court. Drinks from the bar.",
+      "hu": "Grillezés és bográcsozás a helyszínen, petanque-pálya. Italt a pultnál.",
+      "uk": "Гриль і казанок на місці, є майданчик для петанку. Напої з бару."
+    },
+    "price": { "en": "Cooking was free", "hu": "A sütés-főzés ingyenes volt", "uk": "Готування було безкоштовним" }
+  },
+  {
+    "id": "durer-kert", "name": "Dürer Kert", "lat": 47.45996, "lon": 19.05748,
+    "addr": "1117 Budapest, Öböl utca 1", "year": 2023,
+    "url": "https://welovebudapest.com/toplista/2023/07/12/gasztro-szabadido-grillezes-sutogetos-helyek-budapest/",
+    "offer": {
+      "en": "Table plus charcoal grill set: grill, tongs, charcoal, lighter fluid. No prep kitchen, bring food ready to grill.",
+      "hu": "Asztal faszenes grillszettel: grill, csipesz, faszén, gyújtófolyadék. Előkészítő konyha nincs, az ételt sütésre készen hozd.",
+      "uk": "Стіл із набором для гриля на вугіллі: гриль, щипці, вугілля, рідина для розпалу. Кухні немає, їжу привозь готовою до смаження."
+    },
+    "price": { "en": "12,000 Ft for 5 hours", "hu": "12 000 Ft / 5 óra", "uk": "12 000 Ft за 5 годин" }
+  },
+  {
+    "id": "piknik-park", "name": "Piknik Park", "lat": 47.41136, "lon": 19.10385, "approx": true,
+    "addr": "1238 Budapest, Felső Duna-part (Kis-Duna)", "year": 2023,
+    "url": "https://www.facebook.com/piknikparkbp",
+    "offer": {
+      "en": "Private garden for rent on the Kis-Duna. The Piknik Pak includes a grill, tables, benches, chairs, firewood and a speaker.",
+      "hu": "Bérelhető privát kert a Kis-Duna-parton. A Piknik Pakban grill, asztalok, padok, székek, tűzifa és hangszóró.",
+      "uk": "Приватний сад в оренду на березі Малого Дунаю. У Piknik Pak гриль, столи, лавки, стільці, дрова і колонка."
+    },
+    "price": { "en": "Price on request", "hu": "Ár egyeztetés alapján", "uk": "Ціна за запитом" }
+  },
+  {
+    "id": "prometheusz", "name": "Prométheusz Bográcspark", "lat": 47.50379, "lon": 19.15796,
+    "addr": "1106 Budapest, Pilisi utca 7/A (Arena Camping)", "year": 2023,
+    "url": "https://bogracsozasbudapesten.hu",
+    "offer": {
+      "en": "Several cauldron spots and one grill, for groups. Free parking.",
+      "hu": "Több bográcsozóhely és egy grill, csoportoknak. Ingyenes parkolás.",
+      "uk": "Кілька місць для казанка і один гриль, для груп. Безкоштовна парковка."
+    },
+    "price": { "en": "3,500 Ft per person, group minimum 50,000 Ft", "hu": "3 500 Ft / fő, csoportos minimum 50 000 Ft", "uk": "3 500 Ft з особи, мінімум для групи 50 000 Ft" }
+  },
+  {
+    "id": "feher-nyul", "name": "Fehér Nyúl Taproom", "lat": 47.45875, "lon": 19.08441,
+    "addr": "1095 Budapest, Soroksári út 110", "year": 2023,
+    "url": "https://www.facebook.com/fehernyulsorfozde",
+    "offer": {
+      "en": "Bring your own meat, the taproom provides everything else.",
+      "hu": "A húst te hozod, minden mást a sörfőzde ad.",
+      "uk": "М'ясо своє, усе інше дає пивоварня."
+    },
+    "price": { "en": "7,500 Ft", "hu": "7 500 Ft", "uk": "7 500 Ft" }
+  },
+  {
+    "id": "garden-placc", "name": "Garden Placc", "lat": 47.579, "lon": 19.06391,
+    "addr": "1039 Budapest, Királyok útja 33", "year": 2023,
+    "url": "https://www.facebook.com/placcgarden",
+    "offer": {
+      "en": "Grilling next to the Római-part, plus a playground, sports courts and kayak/SUP rental. Details by email.",
+      "hu": "Grillezés a Római-part mellett, játszótér, sportpályák, kajak- és SUP-kölcsönzés. Részletek e-mailben.",
+      "uk": "Гриль біля Római-part, дитячий майданчик, спортивні майданчики, прокат каяків і SUP. Деталі електронною поштою."
+    },
+    "price": { "en": "Price by email", "hu": "Ár e-mailben", "uk": "Ціна електронною поштою" }
+  }
+]
